@@ -15,7 +15,6 @@ fn main() {
         match opts.algorithm {
             Algorithm::UltraNaive => algorithm::ultra_naive::algorithm(buf),
         };
-    let result = result.unwrap();
 
     println!("result: {:?}", result);
 }
