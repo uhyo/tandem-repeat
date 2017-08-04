@@ -5,6 +5,7 @@ use std::env;
 #[derive(Debug, PartialEq, Eq)]
 pub enum Algorithm {
     UltraNaive, // 1
+    Divide,     // 2
 }
 #[derive(Debug)]
 pub struct Opts {
@@ -29,6 +30,8 @@ pub fn getopts() -> Opts {
     let algorithm = 
         if a == "ultranaive" || a == "1" {
             Algorithm::UltraNaive
+        } else if a == "divide" || a == "2" {
+            Algorithm::Divide
         } else {
             panic!("Unknown algorithm {}", a)
         };

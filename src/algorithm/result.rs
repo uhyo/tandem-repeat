@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug,PartialEq,Eq)]
 pub struct AlgoResult {
     // 繰り返しの開始地点
     pub from: usize,

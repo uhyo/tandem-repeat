@@ -1,7 +1,7 @@
 // "Ultra Naive" algorithm
 use algorithm::result::AlgoResult;
 
-pub fn algorithm(data: Vec<u8>) -> AlgoResult {
+pub fn algorithm(data: &[u8]) -> AlgoResult {
     let l = data.len();
 
     let mut max_from = 0;
@@ -25,7 +25,7 @@ pub fn algorithm(data: Vec<u8>) -> AlgoResult {
                 cnt += 1;
                 pos += j;
             }
-            if max_count < cnt {
+            if 1 < cnt && (max_count as usize) * max_length < (cnt as usize) * j {
                 // 最長記録更新
                 max_from = i;
                 max_length = j;
