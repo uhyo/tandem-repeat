@@ -11,11 +11,14 @@ fn main() {
     // read standard input
     let mut buf = Vec::new();
     io::stdin().read_to_end(&mut buf).unwrap();
+    // 終端を足す
+    buf.push(0);
 
     let result =
         match opts.algorithm {
             Algorithm::UltraNaive => algorithm::ultra_naive::algorithm(&buf[..]),
             Algorithm::Divide => algorithm::divide::algorithm(&buf[..]),
+            Algorithm::Lcp => algorithm::lcp::algorithm(&buf[..]),
         };
 
     println!("result: {:?}", result);

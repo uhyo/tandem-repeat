@@ -6,6 +6,7 @@ use std::env;
 pub enum Algorithm {
     UltraNaive, // 1
     Divide,     // 2
+    Lcp,        // 3
 }
 #[derive(Debug)]
 pub struct Opts {
@@ -32,6 +33,8 @@ pub fn getopts() -> Opts {
             Algorithm::UltraNaive
         } else if a == "divide" || a == "2" {
             Algorithm::Divide
+        } else if a == "lcp" || a == "3" {
+            Algorithm::Lcp
         } else {
             panic!("Unknown algorithm {}", a)
         };
