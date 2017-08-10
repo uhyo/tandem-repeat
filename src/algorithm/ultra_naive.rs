@@ -13,7 +13,7 @@ pub fn algorithm(data: &[u8]) -> AlgoResult {
             // 位置iから長さjのパターンが何回繰り返されるか?
             let mut cnt = 0;
             let mut pos = i;
-            'patt: while i < l - j {
+            'patt: while pos < l - j {
                 // 1パターン試す
                 for k in 0..j {
                     if data[i + k] != data[pos + k] {

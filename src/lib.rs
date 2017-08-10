@@ -56,10 +56,39 @@ mod test {
         #[test]
         fn test() {
             assert_eq!(
-                algorithm::lcp::algorithm("foofoobarfoobarbarfooabafoobarbarfoo\0".as_bytes()),
+                algorithm::lcp::algorithm("foofoobarfoobarbarfooabafoobarbarfoo".as_bytes()),
                 // algorithm::lcp::algorithm("aababcabddabcab\0".as_bytes()),
                 AlgoResult {
                     from: 3,
+                    length: 6,
+                    count: 2,
+                }
+            );
+        }
+    }
+    mod lcp_divide {
+        use algorithm;
+        use algorithm::result::AlgoResult;
+        #[test]
+        fn test() {
+            assert_eq!(
+                //                                012345678901234567890123456789012345678
+                algorithm::lcp_divide::algorithm("foofoobarfoobarbarfooaba".as_bytes()),
+                AlgoResult {
+                    from: 3,
+                    length: 6,
+                    count: 2,
+                }
+            );
+        }
+        #[test]
+        fn test_left() {
+            assert_eq!(
+                //                                012345678901234567890123456789012345678
+                algorithm::lcp_divide::algorithm("foobarfoobaraoaoaojfuwjhgnebfyu78yr32hf".as_bytes()),
+                //                                876543210987654321098765432109876543210
+                AlgoResult {
+                    from: 0,
                     length: 6,
                     count: 2,
                 }

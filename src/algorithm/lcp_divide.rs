@@ -6,18 +6,42 @@ use algorithm::rmq::{rmq, Rmq};
 
 use std::mem;
 
-pub fn algorithm(data: &[u8]) -> AlgoResult {
-    let sa = suffix_array(data);
+pub fn algorithm(data_u8: &[u8]) -> AlgoResult {
+    let len = data_u8.len();
+    // データをu32に（順方向と逆方向）
+    let mut data = Vec::with_capacity(len+1);
+    let mut data_rev = Vec::with_capacity(len+1);
+    for i in 0..len {
+        data.push(data_u8[i] as u32);
+        data_rev.push(data_u8[i] as u32);
+    }
+    data_rev.reverse();
+    // 終端を足す
+    data.push(0);
+    data_rev.push(0);
+    // println!("{:?}", data_rev);
+    let len = len + 1;  //終端も入れたやつ
+
+    let sa = suffix_array(&data[..], 256);
+    let sa_rev = suffix_array(&data_rev[..], 256);
+
     let inv_sa = make_inv_sa(&sa[..]);
-    let lcp = lcp_array(data, &sa[..], &inv_sa[..]);
-    let len = data.len();
+    let inv_sa_rev = make_inv_sa(&sa_rev[..]);
+
+    let lcp = lcp_array(&data[..], &sa[..], &inv_sa[..]);
+    let lcp_rev = lcp_array(&data_rev[..], &sa_rev[..], &inv_sa_rev[..]);
 
     let r = rmq(&lcp[..]);
+    let r_rev = rmq(&lcp_rev[..]);
 
-    return rec(data, &lcp[..], &rmq, 0, l, 0);
+    for i in 0..len {
+        // println!("[{:02}] {} {}", i, debug_suffix(&data_rev[..], sa_rev[i]), lcp_rev[i]);
+    }
+
+    return rec(data.len(), &lcp[..], &inv_sa[..], &r, &lcp_rev[..], &inv_sa_rev[..], &r_rev, 0, len, 0);
 }
 
-fn rec(data: &[u8], lcp: &[usize], rmq: &Rmq, start: usize, end: usize, alpha: usize) -> AlgoResult {
+fn rec(l: usize, lcp: &[usize], inv_sa: &[usize], r: &Rmq, lcp_rev: &[usize], inv_sa_rev: &[usize], r_rev: &Rmq, start: usize, end: usize, mut alpha: usize) -> AlgoResult {
     // 区間の長さ
     if end <= start + 1 {
         // もう区間がない
@@ -38,80 +62,136 @@ fn rec(data: &[u8], lcp: &[usize], rmq: &Rmq, start: usize, end: usize, alpha: u
     }
     // 中間点
     let point = (start + end) / 2;
+    // println!("start = {}, end = {}, point = {}", start, end, point);
 
     // pointを含む繰り返しを探す
     let mut max_count = 0;
-    let mut max_len = 0;
+    let mut max_length = 0;
     let mut max_from = 0;
-    for j in 1..(len+1) {
+    for j in 1..(end - point + 2) {
         // 長さjのパターン
-        // まず左へ
-        let mut cnt = 0;
-        let mut pos = point;
-        let mut point2 = point;
-        let mut cur_from = 0;
-        'patt: while start <= pos {
-            for k in 0..j {
-                if data[point - k] != data[pos] {
-                    // 違うじゃん
-                    // 新しい起点を設定
-                    cur_from = pos + 1;
-                    point2 = cur_from;
-                    pos = point + 1 - k;
-                    break 'patt;
-                }
-                if pos == start {
-                    // 最後まで到達した
-                    point2 = point - k;
-                    cur_from = 0;
-                    pos = point2;
-                    if k == 0 {
-                        cnt -= 1;
+
+        // まず右方向へ繰り返しを探す
+        if point + j < end {
+            let mut idx = inv_sa[point];
+            let mut idx2= inv_sa[point+j];
+            if idx > idx2 {
+                mem::swap(&mut idx, &mut idx2);
+            }
+            // 位置iからj文字のパターンが繰り返している長さ
+            let icpxy = r.query(idx, idx2 - 1);
+            // println!("j={} right1: {} ({})", j, icpxy, lcp[icpxy]);
+            if lcp[icpxy] > 0 {
+                // 繰り返しがあった
+
+                // ありえる繰り返しの右端
+                let i2 = point + lcp[icpxy] + j - 1;
+                if i2 < end {
+                    // はみ出たらここでは扱わない
+                    // 座標を逆にする
+                    let i2 = l - 2 - i2;
+                    let i3 = i2 + j;
+                    let mut newidx = inv_sa_rev[i2];
+                    let mut newidx2 = inv_sa_rev[i3];
+                    if newidx > newidx2 {
+                        mem::swap(&mut newidx, &mut newidx2);
                     }
-                    break 'patt;
+                    let icpxy2 = r_rev.query(newidx, newidx2 - 1);
+                    let ln = lcp_rev[icpxy2];
+                    // println!("left1: {}-{} {}-{} : {} ({})", i2, i3, newidx, newidx2, icpxy2, ln);
+                    // i3から（左へ）lnの長さだけ繰り返しがある
+                    let cnt = ln / j + 1;
+                    if cnt > 1 {
+                        // println!("FOUND {}-{}-{}", l - 2 - (i2 + cnt * j - 1), j, cnt);
+                    }
+                    if 1 < cnt && max_count * max_length < cnt * j {
+                        // 最長記録
+                        // 座標を戻す
+                        max_from = l - 2 - (i2 + cnt * j - 1);
+                        max_length = j;
+                        max_count = cnt;
+                    }
                 }
-                pos -= 1;
             }
-            // 1回の繰り返しに成功
-            cnt += 1;
         }
-        // 右へ
-        'pattr: while pos + j < end {
-            for k in 0..j {
-                if data[point2 + k] != data[pos + k] {
-                    break 'pattr;
+        // 左からも探す
+        let i2 = l - 2 - point;
+        if point >= start + j {
+            let i3 = i2 + j;
+            let mut idx = inv_sa_rev[i2];
+            let mut idx2= inv_sa_rev[i3];
+            if idx > idx2 {
+                mem::swap(&mut idx, &mut idx2);
+            }
+            let icpxy = r_rev.query(idx, idx2 - 1);
+            // println!("j={} left2: {}-{} {}-{} {} ({})", j, i2, i3, idx, idx2, icpxy, lcp_rev[icpxy]);
+            if lcp_rev[icpxy] > 0 {
+                // 左へ繰り返しがあった
+                let e = i2 + j + lcp_rev[icpxy] - 1;
+                if l - 2 < e {
+                    // overflow
+                    continue;
+                }
+                // 座標を戻す
+                let e = l - 2 - e;
+                if e < start {
+                    // 戻りすぎ
+                    continue;
+                }
+                // 再度右へ
+                let end2 = e + j;
+                let mut idx = inv_sa[e];
+                let mut idx2= inv_sa[end2];
+                if idx > idx2 {
+                    mem::swap(&mut idx, &mut idx2);
+                }
+                let lcpxy = r.query(idx, idx2 - 1);
+                let ln = lcp[lcpxy];
+                let cnt = ln / j + 1;
+                if 1 < cnt && max_count * max_length < cnt * j {
+                    // 最長記録
+                    max_from = e;
+                    max_length = j;
+                    max_count = cnt;
                 }
             }
-            cnt += 1;
-            pos += j;
-        }
-        // 結果
-        if 1 < cnt && (max_count as usize) * max_len < (cnt as usize) * j {
-            max_from = cur_from;
-            max_count = cnt;
-            max_len = j;
         }
     }
-    if alpha < (max_count as usize) * max_len {
-        alpha = (max_count as usize) * max_len;
+    if alpha < max_count * max_length {
+        alpha = max_count * max_length;
     }
     // 分割したほうを調べる
-    let left = rec(data, start, point, alpha);
+    let left = rec(l, lcp, inv_sa, r, lcp_rev, inv_sa_rev, r_rev, start, point, alpha);
     if alpha < (left.count as usize) * left.length {
-        max_count = left.count;
+        max_count = left.count as usize;
         max_from = left.from;
-        max_len = left.length;
-        alpha = (max_count as usize) * max_len;
+        max_length = left.length;
+        alpha = max_count * max_length;
     }
-    let right = rec(data, point + 1, end, alpha);
+    let right = rec(l, lcp, inv_sa, r, lcp_rev, inv_sa_rev, r_rev, point + 1, end, alpha);
     if alpha < (right.count as usize) * right.length {
-        max_count = right.count;
+        max_count = right.count as usize;
         max_from = right.from;
-        max_len = right.length;
+        max_length = right.length;
     }
     return AlgoResult {
         from: max_from,
-        length: max_len,
-        count: max_count,
+        length: max_length,
+        count: max_count as u32,
     };
+}
+
+#[allow(dead_code)]
+fn debug_suffix(data: &[u32], mut idx: usize) -> String {
+    let mut result = String::new();
+    let len = data.len();
+    while idx < len {
+        if data[idx] == 0 {
+            result.push('$');
+            break;
+        }
+        result.push((data[idx] as u8) as char);
+        idx += 1;
+    }
+    result
 }

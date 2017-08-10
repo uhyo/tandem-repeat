@@ -13,8 +13,6 @@ fn main() {
     io::stdin().read_to_end(&mut buf).unwrap();
     // 改行は邪魔なので消す
     buf.retain(|&c| c != 0x0A && c != 0x0D);
-    // 終端を足す
-    buf.push(0);
 
     let result =
         match opts.algorithm {

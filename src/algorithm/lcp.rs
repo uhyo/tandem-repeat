@@ -9,10 +9,13 @@ use std::mem;
 
 pub fn algorithm(data_u8: &[u8]) -> AlgoResult {
     let len = data_u8.len();
-    let mut data = Vec::with_capacity(len);
+    let mut data = Vec::with_capacity(len+1);
     for i in 0..len {
         data.push(data_u8[i] as u32);
     }
+    // 終端を足す
+    data.push(0);
+    let len = len + 1;
     let sa = suffix_array(&data[..], 256);
     let inv_sa = make_inv_sa(&sa[..]);
     let lcp = lcp_array(&data[..], &sa[..], &inv_sa[..]);
