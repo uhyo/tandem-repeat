@@ -1,8 +1,6 @@
 // LCP arrayを作成
 
-pub fn lcp_array(data: &[u8], sa: &[usize]) -> Vec<usize> {
-    // まず逆接尾辞配列を作成
-    let inv_sa = make_inv_sa(sa);
+pub fn lcp_array(data: &[u8], sa: &[usize], inv_sa: &[usize]) -> Vec<usize> {
     let len = sa.len();
     // 高さ配列
     let mut result = Vec::with_capacity(len);
@@ -40,7 +38,7 @@ pub fn lcp_array(data: &[u8], sa: &[usize]) -> Vec<usize> {
 }
 
 // 逆接尾辞配列を作成
-fn make_inv_sa(sa: &[usize]) -> Vec<usize> {
+pub fn make_inv_sa(sa: &[usize]) -> Vec<usize> {
     let len = sa.len();
     let mut inv_sa = Vec::with_capacity(len);
     for _ in 0..len {
