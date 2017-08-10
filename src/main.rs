@@ -19,7 +19,7 @@ fn main() {
             Algorithm::UltraNaive => algorithm::ultra_naive::algorithm(&buf[..]),
             Algorithm::Divide => algorithm::divide::algorithm(&buf[..]),
             Algorithm::Lcp => algorithm::lcp::algorithm(&buf[..]),
-            Algorithm::LcpDivide => panic!("Not implemented"),
+            Algorithm::LcpDivide => algorithm::lcp_divide::algorithm(&buf[..]),
         };
 
     println!("result: {:?}", result);
