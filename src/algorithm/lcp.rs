@@ -1,6 +1,9 @@
 use algorithm::result::AlgoResult;
 use algorithm::suffix_array::suffix_array;
 use algorithm::lcp_array::{make_inv_sa, lcp_array};
+use algorithm::rmq::rmq;
+
+use std::mem;
 
 // LCP Naive algorithm
 
@@ -11,9 +14,16 @@ pub fn algorithm(data: &[u8]) -> AlgoResult {
     let len = data.len();
 
     // debug
+    /*
     for i in 0..len {
         println!("[{:02}] {} {}", i, debug_suffix(data, sa[i]), lcp[i]);
     }
+    for i in 0..len {
+        println!("[{:02}] -> [{:02}] {}", i, inv_sa[i], lcp[inv_sa[i]]);
+    }
+    */
+
+    let r = rmq(&lcp[..]);
 
     let mut max_from = 0;
     let mut max_length = 0;
@@ -22,20 +32,14 @@ pub fn algorithm(data: &[u8]) -> AlgoResult {
     for i in 0..len {
         for j in 1..((len-i)/2+1) {
             // 位置iから長さjのパターンが何回繰り返されるか?
-            let idx = inv_sa[i];
-            let idx2= inv_sa[i+j];
-            let cnt =
-                if idx < idx2 {
-                    // i+jのほうが後ろにある
-                    // i  : pp...ppq
-                    // ...
-                    // i+j: pp...pq
-                    lcp[idx] / j + 1
-                } else {
-                    // i+j: pp...pq
-                    // i  : pp...ppq
-                    lcp[idx2] / j + 1
-                };
+            let mut idx = inv_sa[i];
+            let mut idx2= inv_sa[i+j];
+            if idx > idx2 {
+                mem::swap(&mut idx, &mut idx2);
+            }
+            // この間の最小のLCPが全体のlcpになる
+            let icpxy = r.query(idx, idx2 - 1);
+            let cnt = lcp[icpxy] / j + 1;
             if 1 < cnt && max_count * max_length < cnt * j {
                 // 最長記録更新
                 max_from = i;
@@ -53,6 +57,7 @@ pub fn algorithm(data: &[u8]) -> AlgoResult {
 }
 
 // debug: 指定位置からのsuffixを表示
+#[allow(dead_code)]
 fn debug_suffix(data: &[u8], mut idx: usize) -> String {
     let mut result = String::new();
     let len = data.len();

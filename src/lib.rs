@@ -55,7 +55,7 @@ mod test {
         #[test]
         fn test() {
             assert_eq!(
-                algorithm::lcp::algorithm("foofoobarfoobarbarfooaba\0".as_bytes()),
+                algorithm::lcp::algorithm("foofoobarfoobarbarfooabafoobarbarfoo\0".as_bytes()),
                 // algorithm::lcp::algorithm("aababcabddabcab\0".as_bytes()),
                 AlgoResult {
                     from: 3,

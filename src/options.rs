@@ -7,6 +7,7 @@ pub enum Algorithm {
     UltraNaive, // 1
     Divide,     // 2
     Lcp,        // 3
+    LcpDivide,  // 4
 }
 #[derive(Debug)]
 pub struct Opts {
@@ -35,6 +36,8 @@ pub fn getopts() -> Opts {
             Algorithm::Divide
         } else if a == "lcp" || a == "3" {
             Algorithm::Lcp
+        } else if a == "lcp_divide" || a == "4" {
+            Algorithm::LcpDivide
         } else {
             panic!("Unknown algorithm {}", a)
         };

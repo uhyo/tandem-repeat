@@ -11,6 +11,8 @@ fn main() {
     // read standard input
     let mut buf = Vec::new();
     io::stdin().read_to_end(&mut buf).unwrap();
+    // 改行は邪魔なので消す
+    buf.retain(|&c| c != 0x0A && c != 0x0D);
     // 終端を足す
     buf.push(0);
 
@@ -19,6 +21,7 @@ fn main() {
             Algorithm::UltraNaive => algorithm::ultra_naive::algorithm(&buf[..]),
             Algorithm::Divide => algorithm::divide::algorithm(&buf[..]),
             Algorithm::Lcp => algorithm::lcp::algorithm(&buf[..]),
+            Algorithm::LcpDivide => panic!("Not implemented"),
         };
 
     println!("result: {:?}", result);
