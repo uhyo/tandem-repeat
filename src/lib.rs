@@ -56,6 +56,7 @@ mod test {
         fn test() {
             assert_eq!(
                 algorithm::lcp::algorithm("mississippi\0".as_bytes()),
+                // algorithm::lcp::algorithm("aababcabddabcab\0".as_bytes()),
                 AlgoResult {
                     from: 3,
                     length: 6,
