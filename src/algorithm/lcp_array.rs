@@ -1,6 +1,6 @@
 // LCP arrayを作成
 
-pub fn lcp_array(data: &[u8], sa: &[usize], inv_sa: &[usize]) -> Vec<usize> {
+pub fn lcp_array(data: &[u32], sa: &[usize], inv_sa: &[usize]) -> Vec<usize> {
     let len = sa.len();
     // 高さ配列
     let mut result = Vec::with_capacity(len);

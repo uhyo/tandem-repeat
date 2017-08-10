@@ -3,7 +3,7 @@
 //       http://sile.hatenablog.jp/entry/20101213/1292190698
 use std::cmp::Ordering;
 
-pub fn suffix_array(data: &[u8]) -> Vec<usize> {
+pub fn suffix_array(data: &[u32], max_alphabet: usize) -> Vec<usize> {
     let len = data.len();
     // < (S-Type) and > (L-Type)
     let mut types = Vec::with_capacity(len);
@@ -50,7 +50,7 @@ pub fn suffix_array(data: &[u8]) -> Vec<usize> {
         }
     }
     // 1-1 -- 1-3
-    let res = induced_sort(&types[..], data, &lms_sa[..]);
+    let res = induced_sort(&types[..], data, &lms_sa[..], max_alphabet);
     // 1-4
     let mut lms_sa = Vec::new();
     for i in 0..len {
@@ -69,7 +69,7 @@ pub fn suffix_array(data: &[u8]) -> Vec<usize> {
     }
     ///// 番号をつける
     let salen = lms_sa.len();
-    let mut name = 0;
+    let mut name: u32 = 0;
     let mut dup = false;
     for i in 0..salen {
         if i != 0 && !lms_eq(data, &lms[..], lms_sa[i-1], lms_sa[i]) {
@@ -96,7 +96,7 @@ pub fn suffix_array(data: &[u8]) -> Vec<usize> {
             // 2-2
             let mut lms_sa = Vec::with_capacity(salen);
             // 再帰
-            let sub = suffix_array(&new_num[..]);
+            let sub = suffix_array(&new_num[..], (name as usize) + 1);
             // subをこの文字列の位置に直す
             for i in 0..salen {
                 lms_sa.push(num_inv[sub[i]]);
@@ -106,16 +106,16 @@ pub fn suffix_array(data: &[u8]) -> Vec<usize> {
             lms_sa
         };
     // 3-1 -- 3-3
-    let result = induced_sort(&types[..], data, &lms_sa[..]);
+    let result = induced_sort(&types[..], data, &lms_sa[..], max_alphabet);
 
     result
 }
 
 // bucket sort
-fn make_bucket(data: &[u8]) -> Vec<usize> {
+fn make_bucket(data: &[u32], max_alphabet: usize) -> Vec<usize> {
     let len = data.len();
-    let mut bucket = Vec::with_capacity(256);
-    for _ in 0..256 {
+    let mut bucket = Vec::with_capacity(max_alphabet);
+    for _ in 0..max_alphabet {
         bucket.push(0);
     }
     for i in 0..len {
@@ -126,7 +126,8 @@ fn make_bucket(data: &[u8]) -> Vec<usize> {
 // 先頭からの位置（右詰め用）に直す
 fn from_right_bucket(bucket: &mut Vec<usize>) {
     let mut sum = 0;
-    for i in 0..256 {
+    let len = bucket.len();
+    for i in 0..len {
         // sum: この文字が始まる位置
         sum += bucket[i];
         bucket[i] = sum;   // bucketは終わりの位置に直す
@@ -134,7 +135,7 @@ fn from_right_bucket(bucket: &mut Vec<usize>) {
 }
 
 // induced sort
-fn induced_sort(types: &[bool], data: &[u8], sa: &[usize]) -> Vec<usize> {
+fn induced_sort(types: &[bool], data: &[u32], sa: &[usize], max_alphabet: usize) -> Vec<usize> {
     let len = data.len();
     let salen = sa.len();
     // 結果を入れるやつ
@@ -143,7 +144,7 @@ fn induced_sort(types: &[bool], data: &[u8], sa: &[usize]) -> Vec<usize> {
         result.push(None);
     }
     // 各文字を数えたもの
-    let default_bucket = make_bucket(data);
+    let default_bucket = make_bucket(data, max_alphabet);
     // 1-1 / 3-1
     let mut bucket = default_bucket.clone();
     from_right_bucket(&mut bucket);
@@ -159,7 +160,7 @@ fn induced_sort(types: &[bool], data: &[u8], sa: &[usize]) -> Vec<usize> {
     let mut bucket = default_bucket.clone();
     ///// 先頭からの位置（ただし左から）
     let mut sum = 0;
-    for i in 0..256 {
+    for i in 0..max_alphabet {
         let s = sum;
         sum += bucket[i];
         bucket[i] = s;
@@ -201,7 +202,7 @@ fn induced_sort(types: &[bool], data: &[u8], sa: &[usize]) -> Vec<usize> {
 }
 
 // LMS部分文字列が一致するかどうかの比較
-fn lms_eq(data: &[u8], lms: &[bool], i: usize, j: usize) -> bool {
+fn lms_eq(data: &[u32], lms: &[bool], i: usize, j: usize) -> bool {
     let len = data.len();
     if data[i] != data[j] {
         return false;

@@ -7,11 +7,15 @@ use std::mem;
 
 // LCP Naive algorithm
 
-pub fn algorithm(data: &[u8]) -> AlgoResult {
-    let sa = suffix_array(data);
+pub fn algorithm(data_u8: &[u8]) -> AlgoResult {
+    let len = data_u8.len();
+    let mut data = Vec::with_capacity(len);
+    for i in 0..len {
+        data.push(data_u8[i] as u32);
+    }
+    let sa = suffix_array(&data[..], 256);
     let inv_sa = make_inv_sa(&sa[..]);
-    let lcp = lcp_array(data, &sa[..], &inv_sa[..]);
-    let len = data.len();
+    let lcp = lcp_array(&data[..], &sa[..], &inv_sa[..]);
 
     // debug
     /*
