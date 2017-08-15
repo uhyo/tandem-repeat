@@ -28,7 +28,7 @@ pub fn getopts() -> Opts {
             },
         };
 
-    let a = opts.opt_str("algorithm").unwrap_or(String::from("ultranaive"));
+    let a = opts.opt_str("algorithm").unwrap_or(String::from("lcp_divide"));
     let algorithm = 
         if a == "ultranaive" || a == "1" {
             Algorithm::UltraNaive
