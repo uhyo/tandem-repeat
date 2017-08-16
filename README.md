@@ -23,17 +23,17 @@ cargo bench
 ```sh
 cargo run --release
 ```
-標準文字列に入力された文字列から繰り返し文字列を探します．
+標準入力に入力された文字列から繰り返し文字列を探します．
 
 また、次のように`--algorithm`オプション（または`-a`オプション）で使用アルゴリズムを指定することができます．
 ```sh
 cargo run --release -- --algorithm ultranaive
 ```
 アルゴリズムは以下の文字列または数値で指定してください．
-* 1. `ultranaive` : 超ナイーブ法
-* 2. `divide` : 分割統治法
-* 3. `lcp` : LCP + 超ナイーブ法
-* 4. `lcp_divide` : LCP + 分割統治法
+* 1: `ultranaive` : 超ナイーブ法
+* 2: `divide` : 分割統治法
+* 3: `lcp` : LCP + 超ナイーブ法
+* 4: `lcp_divide` : LCP + 分割統治法
 
 アルゴリズムを指定しなかった場合，実装されている中で最速の`lcp_divide`が選択されます．
 
